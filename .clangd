@@ -1,0 +1,129 @@
+Documentation:
+  CommentFormat: Doxygen
+
+CompileFlags:
+  Add:
+    - "-std=c++20"
+    - "-Wno-c23-extensions"
+  CompilationDatabase: build/
+
+Completion:
+  AllScopes: true
+
+Hover:
+  ShowAKA: true
+
+Diagnostics:
+  ClangTidy:
+    FastCheckFilter: Loose
+    Add: [
+      # 检查命名
+      readability-identifier-naming,
+      # 检测缩进与代码逻辑结构不符
+      readability-misleading-indentation,
+      # 检查使用make_shared创建shared_ptr
+      modernize-make-shared, 
+      # 检查使用make_unique创建unique_ptr
+      modernize-make-unique, 
+      # 检查并将普通字符串转换为原始字符串，如"C:\\...\\..."转换为R"(C:\...\...)"
+      modernize-raw-string-literal,
+      # 优化类型萃取，如traits<...>::type和traits<...>::value替换为简洁的traits_t<...>和traits_v<...>
+      modernize-type-traits,
+      # 将std::enable_if约束升级为更现代、更清晰的requires子句。
+      modernize-use-constraints,
+      # 将双元static_assert转换为单元形式
+      modernize-unary-static-assert,
+      # 将长类型名或重复出现的类型名替换为auto
+      modernize-use-auto,
+      # 将默认构造函数的成员初始化列表转换为C++11引入的类内默认成员初始化器
+      modernize-use-default-member-init,
+      # 将C风格或C++中按位置顺序的聚合类型初始化，转换为更安全的C++20指定初始化器语法
+      modernize-use-designated-initializers,
+      # 将低效冗余的容器插入操作替换为更现代、更高效的 emplace 系列方法
+      modernize-use-emplace,
+      # 使用=default和=delete
+      modernize-use-equals-default,
+      modernize-use-equals-delete,
+      # 使用<utility>中的安全整数比较函数处理无符号整数与有符号整数的比较
+      modernize-use-integer-sign-comparison,
+      # 自动添加[[nodiscard]]属性
+      modernize-use-nodiscard,
+      # 使用nullptr替换旧式空指针表示
+      modernize-use-nullptr,
+      # 用override替换virtual
+      modernize-use-override,
+      # 将中冗长迂回的字符串前缀/后缀判断替换为C++20中的starts_with()和ends_with()方法
+      modernize-use-starts-ends-with,
+      # 将代码中定义的数学常量或计算常量的函数调用，替换为C++20<numbers>头文件中提供的数学常量
+      modernize-use-std-numbers,
+      # 使用using替换typedef
+      modernize-use-using,
+      # 将代码中非透明的函数对象替换为C++14的透明版本
+      modernize-use-transparent-functors,
+      # 引导使用现代C++的容器来替代C风格数组
+      modernize-avoid-c-arrays,
+      # 标记并建议避免使用C风格可变参数函数
+      modernize-avoid-variadic-functions,
+      # 识别范围for循环中不必要的拷贝，并建议使用引用或const引用来代替
+      performance-for-range-copy,
+      # 识别并引导使用容器自身算法而非通用算法
+      performance-inefficient-algorithm,
+      # 检测范围for循环中，因类型不匹配导致隐式类型转换
+      performance-implicit-conversion-in-loop,
+      # C++ Core Guidelines的检查集合
+      cppcoreguidelines-avoid-magic-numbers,
+      cppcoreguidelines-owning-memory,
+      #  Clang 静态分析器
+      clang-analyzer-*,
+      #
+      readability-qualified-auto,
+      readability-container-size-empty,
+      readability-redundant-*,
+      readability-simplify-boolean-expr
+      ]
+    
+
+    CheckOptions:
+
+      # 命名规范
+
+      readability-identifier-naming.EnumCase: CamelCase  # 枚举名使用 PascalCase
+      readability-identifier-naming.ClassCase: CamelCase # 类名使用 PascalCase
+      readability-identifier-naming.ConstantCase: UPPER_CASE # 常量名使用 UPPER_CASE
+      readability-identifier-naming.EnumConstantCase: UPPER_CASE # 枚举成员使用 UPPER_CASE
+      readability-identifier-naming.VariableCase: lower_case # 变量名使用 snake_case
+      readability-identifier-naming.ClassMemberCase: lower_case # 类变量名使用 snake_case
+      readability-identifier-naming.FunctionCase: lower_case # 函数名使用 snake_case
+      readability-identifier-naming.ParameterCase: lower_case # 函数参数使用 snake_case
+      readability-identifier-naming.PrivateMemberSuffix: _ # 私有成员后缀
+      readability-identifier-naming.ProtectedMemberSuffix: _ # 保护成员后缀
+
+      # 循环
+
+      modernize-loop-convert.MinConfidence: safe # 只在安全情况下将c风格for转换为C++11风格for
+
+      #
+
+      modernize-use-default-member-init.UseAssignment: true # 在成员变量中使用=而非{}初始化
+
+      #
+
+      modernize-use-transparent-functors.SafeMode: true
+
+      #
+
+      bugprone-narrowing-conversions.PedanticMode: false
+      bugprone-narrowing-conversions.IgnoreConversionFromTypes: "size_t;ptrdiff_t"
+      bugprone-suspicious-include.Language: "Cpp"
+      bugprone-unchecked-optional-access.Regex: "get|at"
+
+      #
+
+      cppcoreguidelines-avoid-magic-numbers.IgnoreAllFloatingValues: true
+      cppcoreguidelines-avoid-magic-numbers.IgnoredIntegerValues: "0;1;2;3;4;-1"
+      cppcoreguidelines-macro-usage.AllowedUses: "header_guard;namespace_lowercase"
+
+      #
+
+      misc-throw-by-value-catch-by-reference.CheckThrowTemporaries : true
+      readability-redundant-access-specifiers.CheckFirstDeclaration: false

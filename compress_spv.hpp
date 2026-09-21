@@ -4,15 +4,18 @@
 #include <cstdint>
 #include <cstdio>
 #include <filesystem>
+#include <fstream>
 #include <string>
 #include <string_view>
 #include <utility>
 #include <vector>
 
+
+#include "smolv.h"
 #include "zdict.h"
 #include "zstd.h"
-#include "smolv.h"
 #include <spdlog/spdlog.h>
+
 
 #include "embed.hpp"
 #include "err.hpp"
@@ -93,6 +96,31 @@ auto train_dict(const u8vec &smolvs, const sizes &szs) -> util::res<u8vec> {
 	}
 	dict_buf.resize(dict_sz);
 	return dict_buf;
+}
+
+template <class Src>
+auto write_file(str_view file_name, str_view output_path, const Src &src_data)
+	-> util::res<void> {
+	auto full_path = output_path.empty() ? fs::current_path() / file_name
+										 : fs::path(output_path) / file_name;
+
+	std::ofstream data_out{full_path, std::ios::binary | std::ios::trunc};
+
+	if (!data_out) {
+		return util::make_err("Open {} Failed", full_path.string());
+	}
+
+	data_out.write(reinterpret_cast<const char *>(src_data.data()),
+				   std::size(src_data) * sizeof(u8));
+
+	if (!data_out) {
+		return util::make_err("Write {} to {} Failed", file_name,
+							  full_path.string());
+	}
+
+	spdlog::info("{} Saved Successfully", full_path.string());
+
+	return {};
 }
 
 auto dict_compress(const smolv::ByteArray &smolv, const embed::u8span<> &dict)

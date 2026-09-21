@@ -47,52 +47,6 @@ DictCtxGuard::~DictCtxGuard() {
 	ZSTD_freeCDict(cdict);
 }
 
-auto write_smolv(str_view file_name, const embed::cu8span<> &data,
-				 str_view output_dir) -> util::res<void> {
-
-	fs::path full_path = output_dir.empty() ? fs::path(file_name)
-											: fs::path(output_dir) / file_name;
-	full_path += ".zst";
-
-	auto file = require(fopen(full_path.string().c_str(), "wb"),
-						"Open {} Failed", full_path.string());
-	if (!file) {
-		return util::err(file.error());
-	}
-
-	size_t written = fwrite(data.data(), 1, data.size(), file.value());
-	fclose(file.value());
-	if (written == data.size()) {
-		spdlog::info("{} Saved Successfully", full_path.string());
-		return {};
-	} else {
-		return util::make_err(
-			"Failed to Write Full Data -> Written: {} | Data: {}", written,
-			data.size());
-	}
-}
-
-auto write_dict(str_view file_name, const embed::cu8span<> &data)
-	-> util::res<void> {
-	auto full_file_name = str{file_name} + ".dict";
-	auto file = require(fopen(full_file_name.c_str(), "wb"), "Open {} Failed",
-						full_file_name);
-	if (!file) {
-		return util::err(file.error());
-	}
-
-	size_t written = fwrite(data.data(), 1, data.size(), file.value());
-	fclose(file.value());
-	if (written == data.size()) {
-		spdlog::info("{} Saved Successfully\n", full_file_name);
-		return {};
-	} else {
-		return util::make_err(
-			"Failed to Write Full Data -> Written: {}| Data: {}", written,
-			data.size());
-	}
-}
-
 auto dict_compress(const smolv::ByteArray &smolv, const embed::u8span<> &dict)
 	-> util::res<u8vec> {
 

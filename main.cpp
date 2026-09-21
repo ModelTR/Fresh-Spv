@@ -1,10 +1,10 @@
-/** @version Alpha 0.0.1
+/** @version Alpha 0.0.2
 **	@anchor modelTR
 **	@copyright MIT License
 **	@warning THIS PROJECT IS EARLY VERSION which means it can't be used in
 * actual scene *	@brief A simple program to compress *.spv to *.somlv.zst
 * using zstd and smolv
-**  @bug writing files seem to be some dummy but fine now
+** @date Last edited in 16:10 2026/09/21
 */
 
 ///
@@ -72,7 +72,8 @@ auto main() -> int {
 		auto dict =
 			train_dict<100 * 1024>(smolvs_data, smolvs_sz)
 				.and_then([](const u8vec &d) -> util::res<u8vec> {
-					auto writen = write_dict("smolvs", d);
+					auto writen =
+						write_file("trained_dictionary.dict", "../smolvs", d);
 					if (!writen) {
 						return util::err(writen.error() |
 										 add_err("Write Dictionary Failed"));
@@ -94,8 +95,8 @@ auto main() -> int {
 				auto compressed_smolv =
 					dict_compress(smolv.second, dict.value())
 						.and_then([&](const u8vec &cs) -> util::res<void> {
-							auto res =
-								write_smolv(smolv.first, cs, "../smolvs");
+							auto full_name = str{smolv.first} += ".zst";
+							auto res = write_file(full_name, "../smolvs", cs);
 							if (!res) {
 								return util::err(
 									res.error() |

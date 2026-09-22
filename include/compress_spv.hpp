@@ -124,8 +124,6 @@ auto dict_compress(const vec<T> &data, const vec<T> &dict,
 	size_t const dst_capacity = ZSTD_compressBound(data.size());
 	u8vec compressed_smolv(dst_capacity);
 
-	assert(dst_capacity == compressed_smolv.size());
-
 	size_t const compressed_size = ZSTD_compress_usingCDict(
 		guard->cctx, compressed_smolv.data(), dst_capacity, data.data(),
 		data.size(), guard->cdict);
@@ -169,8 +167,5 @@ auto write_file(str_view file_name, str_view output_path, const Src &src_data)
 
 	return {};
 }
-
-auto dict_compress(const smolv::ByteArray &smolv, const embed::u8span<> &dict)
-	-> util::res<u8vec>;
 
 auto encode_smolv(const embed::cu8span<> &spv) -> util::res<smolv::ByteArray>;

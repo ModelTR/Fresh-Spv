@@ -70,7 +70,7 @@ auto main() -> int {
 
 		/// @note 100kb
 		auto dict =
-			train_dict<100 * 1024>(smolvs_data, smolvs_sz)
+			zstd::train_dict<u8, 100 * 1024>(smolvs_data, smolvs_sz)
 				.and_then([](const u8vec &d) -> util::res<u8vec> {
 					auto writen =
 						write_file("trained_dictionary.dict", "../smolvs", d);

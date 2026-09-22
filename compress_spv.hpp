@@ -108,16 +108,10 @@ auto train_dict(const vec<T> &datas, const sizes &szs)
 							  fn_name);
 	}
 
-	if (szs.size()) {
+	if (szs.empty()) {
 		return util::make_err("{} - The Sizes Can't be Empty", fn_name);
 	}
-
-	if (datas.size() != szs.size()) {
-		return util::make_err("{} - The Training Datas' "
-							  "Size Not Eqaul Sizes' Szie",
-							  fn_name);
-	}
-
+	
 	vec<T> dict_buf(DictSz);
 
 	auto dict_sz =

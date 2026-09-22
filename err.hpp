@@ -164,7 +164,7 @@ auto make_err(spdlog::format_string_t<Args...> fmt, Args &&...args) -> err {
 }
 
 template <class T = std::source_location>
-auto get_fn_name(fmt::format_string<T> fmt = "Fn[{}]",
+auto get_fn_name(fmt::format_string<T> fmt = "Fn[\033[34m{}\033[0m]",
                  T&& loc = std::source_location::current()) -> str {
     return fmt::format(fmt, std::forward<T>(loc));
 }

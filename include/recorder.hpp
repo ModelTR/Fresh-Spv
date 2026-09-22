@@ -21,6 +21,10 @@ private:
 
 public:
 	Recorder(const str &lb = "", const src_loc &loc = src_loc::current());
+
+	Recorder(const Recorder &) = delete;
+	auto operator=(const Recorder &) -> Recorder & = delete;
+
 	~Recorder();
 	auto record(const src_loc &loc = src_loc::current()) -> void;
 };

@@ -45,9 +45,6 @@ auto main() -> int {
 		vec<std::pair<str, smolv::ByteArray>> smolvs;
 		smolvs.reserve(embed::spvs_map.size());
 
-		std::unordered_map<str, smolv::ByteArray> ss;
-		ss.reserve(embed::spvs_map.size());
-
 		int encoded_failed_count = 0;
 
 		for (const auto &spv : embed::spvs_map) {
@@ -68,9 +65,9 @@ auto main() -> int {
 						  encoded_failed_count);
 		}
 
-		/// @note 100kb
+		/// @note 16kb
 		auto dict =
-			zstd::train_dict<u8, 100 * 1024>(smolvs_data, smolvs_sz)
+			zstd::train_dict<u8, 16 * 1024>(smolvs_data, smolvs_sz)
 				.and_then([](const u8vec &d) -> util::res<u8vec> {
 					auto writen =
 						write_file("trained_dictionary.dict", "../smolvs", d);
@@ -116,5 +113,7 @@ auto main() -> int {
 
 		return EXIT_SUCCESS;
 	} catch (...) {
+		spdlog::critical("Unknown exception");
+		return EXIT_FAILURE;
 	}
 }

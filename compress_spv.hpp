@@ -10,12 +10,10 @@
 #include <utility>
 #include <vector>
 
-
 #include "smolv.h"
 #include "zdict.h"
 #include "zstd.h"
 #include <spdlog/spdlog.h>
-
 
 #include "embed.hpp"
 #include "err.hpp"
@@ -97,6 +95,28 @@ auto train_dict(const u8vec &smolvs, const sizes &szs) -> util::res<u8vec> {
 	dict_buf.resize(dict_sz);
 	return dict_buf;
 }
+
+namespace zstd {
+template <class T, size_t DictSz>
+auto zstd_train_dict(const vec<T> &datas, const sizes &szs)
+	-> util::res<u8vec> {
+
+	if (datas.empty()) {
+		return util::make_err(
+			"Fn: \"zstd_train_dict\": The Training Datas Can't be Empty");
+	}
+
+	if (szs.size()) {
+		return util::make_err(
+			"Fn: \"zstd_train_dict\": The Sizes Can't be Empty");
+	}
+
+	if (datas.size() != szs.size()) {
+		return util::make_err("Fn: \"zstd_train_dict\": The Training Datas' "
+							  "Size Not Eqaul Sizes' Szie");
+	}
+}
+} // namespace zstd
 
 template <class Src>
 auto write_file(str_view file_name, str_view output_path, const Src &src_data)

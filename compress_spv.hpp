@@ -69,33 +69,6 @@ auto write_smolv(str_view file_name, const embed::cu8span<> &data,
 auto write_dict(std::string_view file_name, const embed::cu8span<> &data)
 	-> util::res<void>;
 
-template <size_t DictSz>
-auto train_dict(const u8vec &smolvs, const sizes &szs) -> util::res<u8vec> {
-	if (smolvs.empty()) {
-		return util::make_err("{} : Smolvs Data is Empty", util::get_fn_name());
-	}
-	if (szs.empty()) {
-		return util::make_err("Arrary of size_t of Smolvs is Empty");
-	}
-	u8vec dict_buf(DictSz);
-
-	auto dict_sz = ZDICT_trainFromBuffer(dict_buf.data(), DictSz, smolvs.data(),
-										 szs.data(),
-										 static_cast<unsigned int>(szs.size()));
-	if (ZDICT_isError(dict_sz) or dict_sz == 0) {
-		return util::make_err("Dictionary Training Failed with: {}",
-							  str{ZDICT_getErrorName(dict_sz)});
-	}
-
-	if (dict_sz > dict_buf.max_size()) {
-		return util::make_err(
-			"Dictionary Size: {} > Dictionary Buffer Size: {}", dict_sz,
-			dict_buf.max_size());
-	}
-	dict_buf.resize(dict_sz);
-	return dict_buf;
-}
-
 namespace zstd {
 template <class T, size_t DictSz>
 auto train_dict(const vec<T> &datas, const sizes &szs)
@@ -111,7 +84,7 @@ auto train_dict(const vec<T> &datas, const sizes &szs)
 	if (szs.empty()) {
 		return util::make_err("{} - The Sizes Can't be Empty", fn_name);
 	}
-	
+
 	vec<T> dict_buf(DictSz);
 
 	auto dict_sz =

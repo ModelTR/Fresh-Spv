@@ -83,6 +83,8 @@ auto main() -> int {
 			return EXIT_FAILURE;
 		}
 
+		std::atomic<int> failures{0};
+
 		/// @note About 20ms
 		/// @note par policy almost same as par_unseq policy
 		/// @note std::execution::par... need the Intel TBB as backend
@@ -103,11 +105,17 @@ auto main() -> int {
 							return {};
 						});
 				if (!compressed_smolv) {
+					failures++;
 					compressed_smolv.error() |
 						add_err("Compressed Smolv Failed: {}", smolv.first) |
 						print();
 				}
 			});
+		
+		if (failures > 0) {
+			spdlog::error("{} Smolv(s) Compressed Failed", failures.load());
+			return EXIT_FAILURE;
+		}
 
 		t_record.record();
 

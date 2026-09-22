@@ -63,12 +63,6 @@ struct DictCtxGuard {
 		-> util::res<DictCtxGuard>;
 };
 
-auto write_smolv(str_view file_name, const embed::cu8span<> &data,
-				 str_view output_dir = "") -> util::res<void>;
-
-auto write_dict(std::string_view file_name, const embed::cu8span<> &data)
-	-> util::res<void>;
-
 namespace zstd {
 template <class T, size_t DictSz>
 auto train_dict(const vec<T> &datas, const sizes &szs) -> util::res<vec<T>> {

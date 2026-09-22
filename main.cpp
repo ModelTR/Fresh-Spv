@@ -20,10 +20,10 @@
 #include <spdlog/spdlog.h>
 #include <tl/expected.hpp>
 
-#include "compress_spv.hpp"
-#include "embed.hpp"
-#include "err.hpp"
-#include "recorder.hpp"
+#include "include/compress_spv.hpp"
+#include "include/embed.hpp"
+#include "include/err.hpp"
+#include "include/recorder.hpp"
 #include "smolv.h"
 
 /// @todo replace uint8_t with std::byte in C++23 through #embed as std::byte

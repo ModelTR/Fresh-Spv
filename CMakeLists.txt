@@ -19,7 +19,7 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 # 把 FetchContent 的目录设置在主工作文件夹
 set(FETCHCONTENT_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps_cache)
 # 完全关闭更新
-set(FETCHCONTENT_FULLY_DISCONNECTED ON)
+# set(FETCHCONTENT_FULLY_DISCONNECTED ON)
 
 find_package(TBB REQUIRED)
 
@@ -29,7 +29,7 @@ include(FetchContent)
 
 FetchContent_Declare(
     zstd
-    GIT_REPOSITORY https://v4.gh-proxy.org/https://github.com/facebook/zstd/
+    GIT_REPOSITORY https://gh-proxy.com/https://github.com/facebook/zstd/
     GIT_TAG v1.5.7
     GIT_SHALLOW TRUE
     UPDATE_DISCONNECTED TRUE
@@ -47,7 +47,7 @@ FetchContent_MakeAvailable(zstd)
 
 FetchContent_Declare(
     mimalloc
-    GIT_REPOSITORY https://v4.gh-proxy.org/https://github.com/microsoft/mimalloc
+    GIT_REPOSITORY https://gh-proxy.com/https://github.com/microsoft/mimalloc
     GIT_TAG v3.5.1
     GIT_SHALLOW TRUE
 )
@@ -68,7 +68,7 @@ FetchContent_MakeAvailable(mimalloc)
 # --- Frozen -------------------------------------------------------------------
 FetchContent_Declare(
   frozen
-  GIT_REPOSITORY https://v4.gh-proxy.org/https://github.com/serge-sans-paille/frozen
+  GIT_REPOSITORY https://gh-proxy.com/https://github.com/serge-sans-paille/frozen
   GIT_TAG 1.2.0
   GIT_SHALLOW TRUE
   UPDATE_DISCONNECTED TRUE
@@ -80,7 +80,7 @@ FetchContent_MakeAvailable(frozen)
 # --- tl::expected -------------------------------------------------------------
 FetchContent_Declare(
   tl-expected
-  GIT_REPOSITORY https://v4.gh-proxy.org/https://github.com/TartanLlama/expected
+  GIT_REPOSITORY https://gh-proxy.com/https://github.com/TartanLlama/expected
   GIT_TAG v1.3.1
   GIT_SHALLOW TRUE
   UPDATE_DISCONNECTED TRUE
@@ -94,7 +94,7 @@ FetchContent_MakeAvailable(tl-expected)
 # --- spdlog -------------------------------------------------------------
 FetchContent_Declare(
   spdlog
-  GIT_REPOSITORY https://v4.gh-proxy.org/https://github.com/gabime/spdlog
+  GIT_REPOSITORY https://gh-proxy.com/https://github.com/gabime/spdlog
   GIT_TAG v1.17.0
   GIT_SHALLOW TRUE
   UPDATE_DISCONNECTED TRUE
@@ -114,8 +114,8 @@ FetchContent_MakeAvailable(spdlog)
 
 FetchContent_Declare(
     smol-v
-    GIT_REPOSITORY https://v4.gh-proxy.org/https://github.com/aras-p/smol-v
-    GIT_TAG 9dd54c379ac29fa148cb1b829bb939ba7381d8f4
+    GIT_REPOSITORY https://gh-proxy.com/https://github.com/aras-p/smol-v
+    GIT_TAG 55000efe742f56d8b51223b9ea7775a8f0501881
     GIT_SHALLOW TRUE
     UPDATE_DISCONNECTED TRUE
     SYSTEM
@@ -128,13 +128,17 @@ target_include_directories(smol-v-lib PUBLIC
     ${smol-v_SOURCE_DIR}/source
 )
 
+file(GLOB SRC_FILES src/*.cpp)
+
 add_executable(SpvCompress
   main.cpp
-  compress_spv.cpp
-  embed.hpp
-  err.cpp
-  recorder.cpp
+  ${SRC_FILES}
   )
+
+target_include_directories(SpvCompress PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/include
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+)
 
 target_link_libraries(SpvCompress PRIVATE
     mimalloc-obj

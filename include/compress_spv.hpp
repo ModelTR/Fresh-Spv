@@ -104,8 +104,8 @@ auto train_dict(const vec<T> &datas, const sizes &szs) -> util::res<vec<T>> {
 }
 
 template <class T>
-auto dict_compress(const vec<T> &data, const vec<T> &dict, int compression_lvl = 22)
-	-> util::res<vec<T>> {
+auto dict_compress(const vec<T> &data, const vec<T> &dict,
+				   int compression_lvl = 22) -> util::res<vec<T>> {
 	auto fn_name = util::get_fn_name();
 
 	if (data.empty() or dict.empty()) {

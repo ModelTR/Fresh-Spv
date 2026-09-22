@@ -1,5 +1,4 @@
 #include "compress_spv.hpp"
-#include "deps_cache/spdlog-src/include/spdlog/spdlog.h"
 #include "err.hpp"
 #include "smolv.h"
 #include <cassert>

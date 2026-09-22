@@ -98,23 +98,43 @@ auto train_dict(const u8vec &smolvs, const sizes &szs) -> util::res<u8vec> {
 
 namespace zstd {
 template <class T, size_t DictSz>
-auto zstd_train_dict(const vec<T> &datas, const sizes &szs)
+auto train_dict(const vec<T> &datas, const sizes &szs)
 	-> util::res<u8vec> {
 
+	auto fn_name = util::get_fn_name();
+
 	if (datas.empty()) {
-		return util::make_err(
-			"Fn: \"zstd_train_dict\": The Training Datas Can't be Empty");
+		return util::make_err("{} - The Training Datas Can't be Empty",
+							  fn_name);
 	}
 
 	if (szs.size()) {
-		return util::make_err(
-			"Fn: \"zstd_train_dict\": The Sizes Can't be Empty");
+		return util::make_err("{} - The Sizes Can't be Empty", fn_name);
 	}
 
 	if (datas.size() != szs.size()) {
-		return util::make_err("Fn: \"zstd_train_dict\": The Training Datas' "
-							  "Size Not Eqaul Sizes' Szie");
+		return util::make_err("{} - The Training Datas' "
+							  "Size Not Eqaul Sizes' Szie",
+							  fn_name);
 	}
+
+	vec<T> dict_buf(DictSz);
+
+	auto dict_sz =
+		ZDICT_trainFromBuffer(dict_buf.data(), DictSz, datas.data(), szs.data(),
+							  static_cast<unsigned int>(szs.size()));
+	if (ZDICT_isError(dict_sz) or dict_sz == 0) {
+		return util::make_err("{} - Dictionary Training Failed with: {}",
+							  fn_name, str{ZDICT_getErrorName(dict_sz)});
+	}
+
+	if (dict_sz > dict_buf.max_size()) {
+		return util::make_err(
+			"{} - Dictionary Size: {} > Dictionary Buffer Size: {}", fn_name,
+			dict_sz, dict_buf.max_size());
+	}
+	dict_buf.resize(dict_sz);
+	return dict_buf;
 }
 } // namespace zstd
 
@@ -138,7 +158,8 @@ auto write_file(str_view file_name, str_view output_path, const Src &src_data)
 							  full_path.string());
 	}
 
-	spdlog::info("{} - {} Saved Successfully",util::get_fn_name(), full_path.string());
+	spdlog::info("{} - {} Saved Successfully", util::get_fn_name(),
+				 full_path.string());
 
 	return {};
 }

@@ -117,7 +117,7 @@ auto add_warning(spdlog::format_string_t<Args...> fmt, Args &&...args) {
 template <class... Args>
 auto add_critical(spdlog::format_string_t<Args...> fmt, Args &&...args) {
 	return [=](Err &e) -> Err & {
-		e.add_warning(fmt, std::forward<Args>(args)...);
+		e.add_critical(fmt, std::forward<Args>(args)...);
 		return e;
 	};
 }

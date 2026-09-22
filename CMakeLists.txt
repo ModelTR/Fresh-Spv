@@ -142,7 +142,7 @@ target_include_directories(SpvCompress PRIVATE
 
 target_link_libraries(SpvCompress PRIVATE
     mimalloc-obj
-    zstd
+    libzstd_static
     smol-v-lib
     frozen
     expected

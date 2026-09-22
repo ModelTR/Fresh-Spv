@@ -84,6 +84,7 @@ auto main() -> int {
 		}
 
 		std::atomic<int> failures{0};
+		const auto &dict_ref = dict.value();
 
 		/// @note About 20ms
 		/// @note par policy almost same as par_unseq policy
@@ -92,7 +93,7 @@ auto main() -> int {
 			std::execution::par, std::begin(smolvs), std::end(smolvs),
 			[&](const auto &smolv) {
 				auto compressed_smolv =
-					zstd::dict_compress(smolv.second, dict.value(), 22)
+					zstd::dict_compress(smolv.second, dict_ref, 22)
 						.and_then([&](const u8vec &cs) -> util::res<void> {
 							auto full_name = str{smolv.first} += ".zst";
 							auto res = write_file(full_name, "../smolvs", cs);

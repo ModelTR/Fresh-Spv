@@ -121,8 +121,8 @@ auto main() -> int {
 		t_record.record();
 
 		return EXIT_SUCCESS;
-	} catch (...) {
-		spdlog::critical("Unknown exception");
+	} catch (const std::exception& e) {
+		spdlog::critical("Unknown exception", e.what());
 		return EXIT_FAILURE;
 	}
 }

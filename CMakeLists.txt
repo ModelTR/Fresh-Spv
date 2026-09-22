@@ -142,7 +142,7 @@ target_include_directories(SpvCompress PRIVATE
 
 target_link_libraries(SpvCompress PRIVATE
     mimalloc-obj
-    libzstd_static
+    libzstd
     smol-v-lib
     frozen
     expected
@@ -155,10 +155,7 @@ target_compile_options(SpvCompress PRIVATE
     -fno-builtin-malloc -fno-builtin-free -fno-builtin-calloc
     -fno-builtin-realloc -fno-builtin-posix_memalign
     -Wno-c23-extensions
-    -Wall -Wextra
-    -fuse-ld=lld)
+    -Wall -Wextra)
         
 target_link_options(SpvCompress PRIVATE
     -fuse-ld=lld)
-
-target_compile_features(SpvCompress PRIVATE cxx_std_20)

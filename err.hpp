@@ -1,7 +1,10 @@
 #pragma once
 
+#include "deps_cache/spdlog-src/include/spdlog/common.h"
 #include <algorithm>
 #include <cassert>
+#include <source_location>
+#include <stop_token>
 #include <string>
 #include <utility>
 #include <vector>
@@ -132,6 +135,22 @@ inline auto print() {
 	return [](Err &e) -> void { e.print(); };
 }
 
+FMT_BEGIN_NAMESPACE
+
+template<>
+struct fmt::formatter<std::source_location> {
+	constexpr auto parse(fmt::format_parse_context &ctx){
+		return ctx.begin();
+	}
+
+	template<class FormatContext>
+	auto format(const std::source_location &loc, FormatContext &ctx) const{
+		return fmt::format_to(ctx.out(), "{} : {}", loc.file_name(), loc.function_name());
+	}
+};
+
+FMT_END_NAMESPACE
+
 namespace util {
 
 template <class T> using res = tl::expected<T, Err>;
@@ -143,5 +162,13 @@ auto make_err(spdlog::format_string_t<Args...> fmt, Args &&...args) -> err {
 	return tl::unexpected(
 		Err{fmt::format(fmt, std::forward<Args>(args)...), spdlog::level::err});
 }
+
+template <class T = std::source_location>
+auto get_fn_name(fmt::format_string<T> fmt = "Fn[{}]",
+                 T&& loc = std::source_location::current()) -> str {
+    return fmt::format(fmt, std::forward<T>(loc));
+}
+
+
 
 } // namespace util

@@ -72,7 +72,7 @@ auto write_dict(std::string_view file_name, const embed::cu8span<> &data)
 template <size_t DictSz>
 auto train_dict(const u8vec &smolvs, const sizes &szs) -> util::res<u8vec> {
 	if (smolvs.empty()) {
-		return util::make_err("Smolvs Data is Empty");
+		return util::make_err("{} : Smolvs Data is Empty", util::get_fn_name());
 	}
 	if (szs.empty()) {
 		return util::make_err("Arrary of size_t of Smolvs is Empty");
@@ -138,7 +138,7 @@ auto write_file(str_view file_name, str_view output_path, const Src &src_data)
 							  full_path.string());
 	}
 
-	spdlog::info("{} Saved Successfully", full_path.string());
+	spdlog::info("{} - {} Saved Successfully",util::get_fn_name(), full_path.string());
 
 	return {};
 }

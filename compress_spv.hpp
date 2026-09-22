@@ -99,7 +99,7 @@ auto train_dict(const u8vec &smolvs, const sizes &szs) -> util::res<u8vec> {
 namespace zstd {
 template <class T, size_t DictSz>
 auto train_dict(const vec<T> &datas, const sizes &szs)
-	-> util::res<u8vec> {
+	-> util::res<vec<T>> {
 
 	auto fn_name = util::get_fn_name();
 

@@ -59,7 +59,7 @@ struct DictCtxGuard {
 
 	~DictCtxGuard();
 
-	static auto create(const embed::u8span<> &dict, int compression_lvl)
+	static auto create(const u8vec &dict, int compression_lvl)
 		-> util::res<DictCtxGuard>;
 };
 
@@ -102,6 +102,43 @@ auto train_dict(const vec<T> &datas, const sizes &szs) -> util::res<vec<T>> {
 	dict_buf.resize(dict_sz);
 	return dict_buf;
 }
+
+template <class T>
+auto dict_compress(const vec<T> &data, const vec<T> &dict, int compression_lvl = 22)
+	-> util::res<vec<T>> {
+	auto fn_name = util::get_fn_name();
+
+	if (data.empty() or dict.empty()) {
+		return util::make_err(
+			"{} - Invalid Input for Compression -> smolv: {} | dictionary: {}",
+			fn_name, data.size(), dict.size());
+	}
+
+	auto guard = DictCtxGuard::create(dict, compression_lvl);
+
+	if (!guard) {
+		return util::err(guard.error() |
+						 add_err("DictCtxGuard Created Failed"));
+	}
+
+	size_t const dst_capacity = ZSTD_compressBound(data.size());
+	u8vec compressed_smolv(dst_capacity);
+
+	assert(dst_capacity == compressed_smolv.size());
+
+	size_t const compressed_size = ZSTD_compress_usingCDict(
+		guard->cctx, compressed_smolv.data(), dst_capacity, data.data(),
+		data.size(), guard->cdict);
+
+	if (ZSTD_isError(compressed_size)) {
+		return util::make_err("{} - Compression Failed: {}", fn_name,
+							  ZSTD_getErrorName(compressed_size));
+	}
+
+	compressed_smolv.resize(compressed_size);
+	return compressed_smolv;
+}
+
 } // namespace zstd
 
 template <class Src>
@@ -124,12 +161,11 @@ auto write_file(str_view file_name, str_view output_path, const Src &src_data)
 				   std::size(src_data) * sizeof(u8));
 
 	if (!data_out) {
-		return util::make_err("{} - Write {} to {} Failed", fn_name,
-							  file_name, full_path.string());
+		return util::make_err("{} - Write {} to {} Failed", fn_name, file_name,
+							  full_path.string());
 	}
 
-	spdlog::info("{} - {} Saved Successfully", fn_name,
-				 full_path.string());
+	spdlog::info("{} - {} Saved Successfully", fn_name, full_path.string());
 
 	return {};
 }

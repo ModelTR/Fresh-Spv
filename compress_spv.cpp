@@ -26,7 +26,7 @@ auto DictCtxGuard::operator=(DictCtxGuard &&other) noexcept -> DictCtxGuard & {
 	return *this;
 }
 
-auto DictCtxGuard::create(const embed::u8span<> &dict, int compression_lvl)
+auto DictCtxGuard::create(const u8vec &dict, int compression_lvl)
 	-> util::res<DictCtxGuard> {
 
 	auto fn_name = util::get_fn_name();
@@ -48,42 +48,6 @@ auto DictCtxGuard::create(const embed::u8span<> &dict, int compression_lvl)
 DictCtxGuard::~DictCtxGuard() {
 	ZSTD_freeCCtx(cctx);
 	ZSTD_freeCDict(cdict);
-}
-
-auto dict_compress(const smolv::ByteArray &smolv, const embed::u8span<> &dict)
-	-> util::res<u8vec> {
-
-	auto fn_name = util::get_fn_name();
-
-	if (smolv.empty() or dict.empty()) {
-		return util::make_err(
-			"{} - Invalid Input for Compression -> smolv: {} | dictionary: {}",
-			fn_name, smolv.size(), dict.size());
-	}
-
-	auto guard = DictCtxGuard::create(dict, 22);
-
-	if (!guard) {
-		return util::err(guard.error() |
-						 add_err("DictCtxGuard Created Failed"));
-	}
-
-	size_t const dst_capacity = ZSTD_compressBound(smolv.size());
-	u8vec compressed_smolv(dst_capacity);
-
-	assert(dst_capacity == compressed_smolv.size());
-
-	size_t const compressed_size = ZSTD_compress_usingCDict(
-		guard->cctx, compressed_smolv.data(), dst_capacity, smolv.data(),
-		smolv.size(), guard->cdict);
-
-	if (ZSTD_isError(compressed_size)) {
-		return util::make_err("{} - Compression Failed: {}", fn_name,
-							  ZSTD_getErrorName(compressed_size));
-	}
-
-	compressed_smolv.resize(compressed_size);
-	return compressed_smolv;
 }
 
 auto encode_smolv(const embed::cu8span<> &spv) -> util::res<smolv::ByteArray> {

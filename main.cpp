@@ -93,7 +93,7 @@ auto main() -> int {
 			std::execution::par, std::begin(smolvs), std::end(smolvs),
 			[&](const auto &smolv) {
 				auto compressed_smolv =
-					dict_compress(smolv.second, dict.value())
+					zstd::dict_compress(smolv.second, dict.value(), 22)
 						.and_then([&](const u8vec &cs) -> util::res<void> {
 							auto full_name = str{smolv.first} += ".zst";
 							auto res = write_file(full_name, "../smolvs", cs);

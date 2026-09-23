@@ -1,5 +1,6 @@
 #include "zstd_warpper.hpp"
-
+#include "err.hpp"
+#include "util.hpp"
 
 DictCtxGuard::DictCtxGuard(ZSTD_CDict *d, ZSTD_CCtx *c) : cdict(d), cctx(c) {}
 
@@ -26,18 +27,20 @@ auto DictCtxGuard::create(const u8vec &dict, int compression_lvl)
 
 	auto fn_name = util::get_fn_name();
 
-	auto *cdict = ZSTD_createCDict(dict.data(), dict.size(), compression_lvl);
+	auto cdict = util::require(
+		ZSTD_createCDict(dict.data(), dict.size(), compression_lvl),
+		"{} - CDict Created Failed", fn_name);
 	if (!cdict) {
-		return util::make_err("{} - Created CDict Failed", fn_name);
+		return util::err(cdict.error());
 	}
 
-	auto *cctx = ZSTD_createCCtx();
+	auto cctx = util::require(ZSTD_createCCtx(), "{} - CCtx Created Failed", fn_name);
 	if (!cctx) {
-		ZSTD_freeCDict(cdict);
-		return util::make_err("{} - Created CCtx Failed", fn_name);
+		ZSTD_freeCDict(*cdict);
+		return util::err(cctx.error());
 	}
 
-	return DictCtxGuard(cdict, cctx);
+	return DictCtxGuard(*cdict, *cctx);
 }
 
 DictCtxGuard::~DictCtxGuard() {

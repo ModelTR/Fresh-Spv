@@ -4,6 +4,8 @@
 
 #include "err.hpp"
 #include "type_alias.hpp"
+#include "util.hpp"
+
 
 struct DictCtxGuard {
 	ZSTD_CDict *cdict = nullptr;

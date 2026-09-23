@@ -14,9 +14,10 @@
 
 #include "type_alias.hpp"
 
+/// @todo Add conversion from Err to tl::unexpected<Err>
+
 class Err {
 private:
-	bool printable_ = true;
 	vec<str> logged_conts_;
 	vec<spdlog::level::level_enum> levels_;
 

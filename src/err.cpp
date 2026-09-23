@@ -15,7 +15,6 @@ Err::Err(str &&mesg, spdlog::level::level_enum lvl) {
 auto Err::print(spdlog::level::level_enum lvl_beprinted) -> void {
 	assert(logged_conts_.size() == levels_.size());
 
-	if (printable_) {
 		/// @note use "uz" std::size_t literal replace size_t{0} from C++23
 		/// @todo use std::views::zip instead from C++23
 		/// @brief use vws::filter to get the corresponding logged content with
@@ -34,6 +33,4 @@ auto Err::print(spdlog::level::level_enum lvl_beprinted) -> void {
 		for (const auto &[cont, lvl] : zipped) {
 			spdlog::log(lvl, cont);
 		}
-		printable_ = false;
-	}
 }

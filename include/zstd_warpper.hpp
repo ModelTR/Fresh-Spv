@@ -8,6 +8,8 @@
 
 
 struct DictCtxGuard {
+	/// @todo separate ZSTD_CDict and ZSTD_CCtx from guard
+	/// @todo ZSTD_CCtx isn't thread safe, every thread must have its own ones
 	ZSTD_CDict *cdict = nullptr;
 	ZSTD_CCtx *cctx = nullptr;
 	DictCtxGuard(ZSTD_CDict *d, ZSTD_CCtx *c);

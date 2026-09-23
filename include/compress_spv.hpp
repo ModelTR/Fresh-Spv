@@ -4,7 +4,6 @@
 #include <fstream>
 #include <string>
 #include <string_view>
-#include <utility>
 #include <vector>
 
 #include "smolv.h"
@@ -14,15 +13,6 @@
 
 #include "err.hpp"
 #include "type_alias.hpp"
-
-template <class T, class... Args>
-auto require(const T &value, spdlog::format_string_t<Args...> fmt,
-			 Args &&...args) -> util::res<T> {
-	if (!value) {
-		return util::make_err(fmt, std::forward<Args>(args)...);
-	}
-	return value;
-}
 
 template <class Src>
 auto write_file(str_view file_name, str_view output_path, const Src &src_data)

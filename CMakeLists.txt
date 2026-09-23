@@ -43,28 +43,6 @@ set(ZSTD_BUILD_TESTS OFF)
 
 FetchContent_MakeAvailable(zstd)
 
-# --- mimalloc --------------------------------------------------------------
-
-FetchContent_Declare(
-    mimalloc
-    GIT_REPOSITORY https://gh-proxy.com/https://github.com/microsoft/mimalloc
-    GIT_TAG v3.5.1
-    GIT_SHALLOW TRUE
-)
-
-set(MI_BUILD_TESTS OFF)
-set(MI_USE_CXX ON)
-set(MI_BUILD_SHARED OFF)
-set(MI_STATIC_LIB ON)
-set(MI_OPT_ARCH ON)
-set(MI_OPT_SIMD ON)
-
-if (CMAKE_BUILD_TYPE STREQUAL "Debug")
-    set(MI_SECURE ON)
-endif()
-
-FetchContent_MakeAvailable(mimalloc)
-
 # --- Frozen -------------------------------------------------------------------
 FetchContent_Declare(
   frozen
@@ -141,7 +119,6 @@ target_include_directories(SpvCompress PRIVATE
 )
 
 target_link_libraries(SpvCompress PRIVATE
-    mimalloc-obj
     libzstd
     smol-v-lib
     frozen
@@ -152,8 +129,6 @@ target_link_libraries(SpvCompress PRIVATE
 
 
 target_compile_options(SpvCompress PRIVATE
-    -fno-builtin-malloc -fno-builtin-free -fno-builtin-calloc
-    -fno-builtin-realloc -fno-builtin-posix_memalign
     -Wno-c23-extensions
     -Wall -Wextra)
         

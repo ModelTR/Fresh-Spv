@@ -1,13 +1,12 @@
-/** @version Alpha 0.0.2
+/** @version Alpha 0.0.3
 **	@anchor modelTR
 **	@copyright MIT License
 **	@warning THIS PROJECT IS EARLY VERSION which means it can't be used in
 * actual scene *	@brief A simple program to compress *.spv to *.somlv.zst
 * using zstd and smolv
-** @date Last edited in 16:10 2026/09/21
+** @date Last edited in 21:45 2026/09/23
 */
 
-///
 
 #include <algorithm>
 #include <cstdlib>
@@ -25,6 +24,7 @@
 #include "err.hpp"
 #include "recorder.hpp"
 #include "smolv.h"
+#include "zstd_warpper.hpp"
 
 /// @todo replace uint8_t with std::byte in C++23 through #embed as std::byte
 

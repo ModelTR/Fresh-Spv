@@ -6,19 +6,13 @@
 
 #pragma once
 
-#include <cstdint>
 #include <span>
 #include "frozen/unordered_map.h"
 #include "frozen/string.h"
 
-using u8 = std::uint8_t;
+#include "type_alias.hpp"
 
 namespace embed {
-    template <size_t Extent = std::dynamic_extent>
-    using u8span = std::span<u8, Extent>;
-
-    template <size_t Extent = std::dynamic_extent>
-    using cu8span = std::span<const u8, Extent>;
     
     using SpvsMap = frozen::unordered_map<frozen::string, const std::span<const u8>, 35>;
 

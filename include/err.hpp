@@ -3,8 +3,7 @@
 #include <algorithm>
 #include <cassert>
 #include <source_location>
-#include <stop_token>
-#include <string>
+#include <spdlog/common.h>
 #include <utility>
 #include <vector>
 
@@ -155,10 +154,26 @@ template <class T> using res = tl::expected<T, Err>;
 
 using err = tl::unexpected<Err>;
 
+template <spdlog::level::level_enum LVL, class... Args>
+auto make_impl(spdlog::format_string_t<Args...> fmt, Args &&...args) {
+	return tl::unexpected(
+		Err{fmt::format(fmt, std::forward<Args>(args)...), LVL});
+}
+
 template <class... Args>
 auto make_err(spdlog::format_string_t<Args...> fmt, Args &&...args) -> err {
-	return tl::unexpected(
-		Err{fmt::format(fmt, std::forward<Args>(args)...), spdlog::level::err});
+	return make_impl<spdlog::level::err>(fmt, std::forward<Args>(args)...);
+}
+
+template <class... Args>
+auto make_info(spdlog::format_string_t<Args...> fmt, Args &&...args) -> err {
+	return make_impl<spdlog::level::info>(fmt, std::forward<Args>(args)...);
+}
+
+template <class... Args>
+auto make_critical(spdlog::format_string_t<Args...> fmt, Args &&...args)
+	-> err {
+	return make_impl<spdlog::level::critical>(fmt, std::forward<Args>(args)...);
 }
 
 template <class T = std::source_location>

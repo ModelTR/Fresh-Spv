@@ -74,7 +74,7 @@ public:
 	}
 
 	/// @brief spdlog::level::off as a default represent print all level
-	auto print(spdlog::level::level_enum lvl_beprinted = spdlog::level::off)
+	auto print(spdlog::level::level_enum lvl_beprinted = spdlog::level::off) const
 		-> void;
 
 	template <class Fn>
@@ -137,7 +137,7 @@ inline auto print() {
 
 FMT_BEGIN_NAMESPACE
 
-template <> struct fmt::formatter<std::source_location> {
+template <> struct formatter<std::source_location> {
 	constexpr auto parse(fmt::format_parse_context &ctx) { return ctx.begin(); }
 
 	template <class FormatContext>

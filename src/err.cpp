@@ -12,7 +12,7 @@ Err::Err(str &&mesg, spdlog::level::level_enum lvl) {
 }
 
 
-auto Err::print(spdlog::level::level_enum lvl_beprinted) -> void {
+auto Err::print(spdlog::level::level_enum lvl_beprinted) const -> void {
 	assert(logged_conts_.size() == levels_.size());
 
 		/// @note use "uz" std::size_t literal replace size_t{0} from C++23

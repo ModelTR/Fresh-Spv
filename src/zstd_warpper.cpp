@@ -1,49 +1,74 @@
 #include "zstd_warpper.hpp"
 #include "err.hpp"
 #include "util.hpp"
+#include <spdlog/spdlog.h>
+#include <utility>
 
-DictCtxGuard::DictCtxGuard(ZSTD_CDict *d, ZSTD_CCtx *c) : cdict(d), cctx(c) {}
+details::CDictGuard::CDictGuard(ZSTD_CDict *d) : cdict_(d) {}
 
-DictCtxGuard::DictCtxGuard(DictCtxGuard &&other) noexcept
-	: cdict(other.cdict), cctx(other.cctx) {
-	other.cdict = nullptr;
-	other.cctx = nullptr;
-}
+details::CDictGuard::CDictGuard(CDictGuard &&other) noexcept
+	: cdict_(std::exchange(other.cdict_, nullptr)) {}
 
-auto DictCtxGuard::operator=(DictCtxGuard &&other) noexcept -> DictCtxGuard & {
+auto details::CDictGuard::operator=(CDictGuard &&other) noexcept
+	-> CDictGuard & {
 	if (this != &other) {
-		ZSTD_freeCCtx(cctx);
-		ZSTD_freeCDict(cdict);
-		cdict = other.cdict;
-		cctx = other.cctx;
-		other.cdict = nullptr;
-		other.cctx = nullptr;
+		ZSTD_freeCDict(cdict_);
+		cdict_ = std::exchange(other.cdict_, nullptr);
+		return *this;
 	}
 	return *this;
 }
 
-auto DictCtxGuard::create(const u8vec &dict, int compression_lvl)
-	-> util::res<DictCtxGuard> {
+details::CDictGuard::~CDictGuard() { ZSTD_freeCDict(cdict_); }
 
-	auto fn_name = util::get_fn_name();
+auto details::CDictGuard::create(const u8vec &dict, int compression_lvl)
+	-> util::res<CDictGuard> {
+
+	if (dict.empty()) {
+		return util::make_err("{} - Trained Dict Can't be empty",
+							  util::get_fn_name());
+	}
 
 	auto cdict = util::require(
 		ZSTD_createCDict(dict.data(), dict.size(), compression_lvl),
-		"{} - CDict Created Failed", fn_name);
+		"{} - CDict Created Failed", util::get_fn_name());
+
 	if (!cdict) {
 		return util::err(cdict.error());
 	}
 
-	auto cctx = util::require(ZSTD_createCCtx(), "{} - CCtx Created Failed", fn_name);
+	return CDictGuard{*cdict};
+}
+
+details::CCtxGuard::CCtxGuard(ZSTD_CCtx *c) : cctx_(c) {}
+
+details::CCtxGuard::CCtxGuard(details::CCtxGuard &&other) noexcept
+	: cctx_(std::exchange(other.cctx_, nullptr)) {}
+
+auto details::CCtxGuard::operator=(details::CCtxGuard &&other) noexcept
+	-> CCtxGuard & {
+	if (this != &other) {
+		ZSTD_freeCCtx(cctx_);
+		cctx_ = std::exchange(other.cctx_, nullptr);
+		return *this;
+	}
+
+	return *this;
+}
+
+details::CCtxGuard::~CCtxGuard() { ZSTD_freeCCtx(cctx_); }
+
+auto details::CCtxGuard::create() -> util::res<CCtxGuard> {
+	auto cctx = util::require(ZSTD_createCCtx(), "{} - CCtx Created Failed",
+							  util::get_fn_name());
 	if (!cctx) {
-		ZSTD_freeCDict(*cdict);
 		return util::err(cctx.error());
 	}
 
-	return DictCtxGuard(*cdict, *cctx);
+	return CCtxGuard{*cctx};
 }
 
-DictCtxGuard::~DictCtxGuard() {
-	ZSTD_freeCCtx(cctx);
-	ZSTD_freeCDict(cdict);
+auto zstd::make_cdict_guard(const u8vec &dict, int compression_lvl)
+	-> util::res<details::CDictGuard> {
+	return details::CDictGuard::create(dict, compression_lvl);
 }

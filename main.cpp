@@ -7,7 +7,6 @@
 ** @date Last edited in 21:45 2026/09/23
 */
 
-
 #include <algorithm>
 #include <cstdlib>
 #include <execution>
@@ -84,7 +83,12 @@ auto main() -> int {
 		}
 
 		std::atomic<int> failures{0};
-		const auto &dict_ref = dict.value();
+		auto cdict_g = zstd::make_cdict_guard(*dict, 22);
+		if (!cdict_g) {
+			cdict_g.error() | print();
+			return EXIT_FAILURE;
+		}
+		auto *const cdict = cdict_g->get();
 
 		/// @note About 20ms
 		/// @note par policy almost same as par_unseq policy
@@ -93,7 +97,7 @@ auto main() -> int {
 			std::execution::par, std::begin(smolvs), std::end(smolvs),
 			[&](const auto &smolv) {
 				auto compressed_smolv =
-					zstd::dict_compress(smolv.second, dict_ref, 22)
+					zstd::dict_compress(smolv.second, cdict)
 						.and_then([&](const u8vec &cs) -> util::res<void> {
 							auto full_name = str{smolv.first} += ".zst";
 							auto res = write_file(full_name, "../smolvs", cs);
@@ -112,7 +116,7 @@ auto main() -> int {
 						print();
 				}
 			});
-		
+
 		if (failures > 0) {
 			spdlog::error("{} Smolv(s) Compressed Failed", failures.load());
 			return EXIT_FAILURE;
@@ -121,7 +125,7 @@ auto main() -> int {
 		t_record.record();
 
 		return EXIT_SUCCESS;
-	} catch (const std::exception& e) {
+	} catch (const std::exception &e) {
 		spdlog::critical("Unknown exception", e.what());
 		return EXIT_FAILURE;
 	}

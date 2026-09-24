@@ -126,7 +126,7 @@ auto main() -> int {
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {
-		spdlog::critical("Unknown exception", e.what());
+		spdlog::critical("{}", e.what());
 		return EXIT_FAILURE;
 	}
 }

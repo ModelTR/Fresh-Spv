@@ -26,24 +26,21 @@
 #include "smolv.h"
 #include "zstd_warpper.hpp"
 
-
 /// @todo replace uint8_t with std::byte in C++23 through #embed as std::byte
-/// @todo add CLI functionality instead of hard-encode
 /// @todo add benchmark
 /// @todo add test
 
 auto main(int argc, char **argv) -> int {
 	try {
 		util::Recorder t_record;
-
-		auto cli = cli::make(argc, argv);
-		auto const OUTPUT_DIR = cli.get_path().string();
-
 		spdlog::info("Current working directory: {}",
 					 fs::current_path().string());
 
-		u8vec smolvs_data;
+		auto cli = cli::make(argc, argv);
+		auto const OUTPUT_DIR = cli.get_path();
 
+		u8vec training_data;
+		training_data.reserve(embed::total_sz);
 		sizes smolvs_sz;
 		smolvs_sz.reserve(embed::spvs_map.size());
 
@@ -57,10 +54,10 @@ auto main(int argc, char **argv) -> int {
 		for (const auto &spv : embed::spvs_map) {
 			auto res = encode_smolv(spv.second);
 			if (res) {
-				auto &smolv = *res;
+				auto const &smolv = *res;
 				smolvs.emplace_back(str{spv.first.data()}, smolv);
 				smolvs_sz.push_back(smolv.size());
-				smolvs_data.insert(smolvs_data.end(), smolv.begin(),
+				training_data.insert(training_data.end(), smolv.begin(),
 								   smolv.end());
 			} else {
 				encoded_failed_count++;
@@ -75,7 +72,7 @@ auto main(int argc, char **argv) -> int {
 
 		/// @note 16kb
 		auto dict =
-			fszstd::train_dict<u8, 16 * 1024>(smolvs_data, smolvs_sz)
+			fszstd::train_dict<u8, 16 * 1024>(training_data, smolvs_sz)
 				.and_then([&OUTPUT_DIR](const u8vec &d) -> util::res<u8vec> {
 					auto writen =
 						write_file("trained_dictionary.dict", OUTPUT_DIR, d);

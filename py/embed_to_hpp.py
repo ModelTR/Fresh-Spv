@@ -21,6 +21,7 @@ if hasattr(sys.stdout, "reconfigure"):
 if hasattr(sys.stderr, "reconfigure"):
     sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
+
 # ---------- 命名转换工具 ----------
 class NamingConverter:
     """提供命名风格转换功能（可自定义）"""
@@ -77,10 +78,8 @@ class EmbedGenerator:
                 continue
             for ext in self.extensions:
                 pattern: str = f"*{ext}"
-                # 递归搜索
                 for f in shader_dir.rglob(pattern):
                     all_files.append((shader_dir, f))
-        # 按相对路径排序以保证稳定
         all_files.sort(key=lambda x: str(x[1].relative_to(x[0])))
         self.logger.debug(f"找到 {len(all_files)} 个文件")
         return all_files
@@ -99,12 +98,9 @@ class EmbedGenerator:
         used_names: Set[str] = set()
 
         for shader_dir, file_path in files:
-            # 计算相对路径（相对于 shader_dir）
             rel_path: Path = file_path.relative_to(shader_dir)
-            rel_str: str = str(rel_path).replace('\\', '/')  # 统一为 '/'
-            # 去掉 .spv 后缀，得到基础路径（如 "subdir/file.vert"）
+            rel_str: str = str(rel_path).replace('\\', '/')
             base: str = str(rel_path.with_suffix('')).replace('\\', '/')
-            # 分割为根和扩展（最后一个点分隔）
             parts: List[str] = base.split('.')
             if len(parts) == 1:
                 root: str = parts[0]
@@ -113,35 +109,28 @@ class EmbedGenerator:
                 root = '.'.join(parts[:-1])
                 ext = parts[-1]
             if not ext:
-                # 如果没有扩展，则整个 base 作为 root，ext 设为 'spv'（兼容）
                 root = base
                 ext = 'spv'
 
-            # 清理非法字符
             root = NamingConverter.sanitize_identifier(root)
             ext = NamingConverter.sanitize_identifier(ext) if ext else 'spv'
 
-            # 宏定义路径：前缀 + 相对路径
             macro_value: str = f"{self.prefix}{rel_str}"
 
-            # 生成命名：将根中的斜杠替换为下划线
             root_clean: str = root.replace('/', '_')
             root_snake: str = NamingConverter.camel_to_snake(root_clean)
             root_snake_upper: str = root_snake.upper()
             ext_upper: str = ext.upper()
             ext_lower: str = ext.lower()
 
-            # 宏名：根大写蛇形 + 扩展大写
             macro: str = f"{root_snake_upper}_{ext_upper}"
             var: str = f"{root_snake}_{ext_lower}"
             raw_var: str = f"raw_{var}"
 
-            # 确保标识符合法
             macro = NamingConverter.sanitize_identifier(macro).upper()
             var = NamingConverter.sanitize_identifier(var).lower()
             raw_var = NamingConverter.sanitize_identifier(raw_var).lower()
 
-            # 冲突检测（大小写不敏感）
             lower_macro: str = macro.lower()
             if lower_macro in used_names:
                 self.logger.error(f"命名冲突: 宏 '{macro}' 与已有名称冲突（来自 {rel_str}）")
@@ -152,7 +141,6 @@ class EmbedGenerator:
             used_names.add(lower_macro)
             used_names.add(var)
 
-            # 映射键：使用 base（去掉 .spv 的相对路径），不包含前缀
             key: str = base
             map_entries.append((key, var))
 
@@ -179,6 +167,7 @@ class EmbedGenerator:
         n: int = len(map_entries)
         lines: List[str] = []
 
+        # ---------- 文件头 ----------
         lines.append("// ============================================================\n")
         lines.append("// 此文件由 embed_to_hpp.py 自动生成，请勿手动编辑。\n")
         lines.append(f"// 生成时间: {datetime.now().isoformat()}\n")
@@ -187,6 +176,7 @@ class EmbedGenerator:
         lines.append("\n")
         lines.append("#pragma once\n")
         lines.append("\n")
+        lines.append("#include <cstddef>\n")
         lines.append("#include <cstdint>\n")
         lines.append("#include <span>\n")
         lines.append("#include \"frozen/unordered_map.h\"\n")
@@ -194,30 +184,54 @@ class EmbedGenerator:
         lines.append("\n")
         lines.append("using u8 = std::uint8_t;\n")
         lines.append("\n")
+
+        # ---------- 命名空间 ----------
         lines.append("namespace embed {\n")
         lines.append("\n")
         lines.append("    template <size_t Extent = std::dynamic_extent>\n")
         lines.append("    using cu8span = std::span<const u8, Extent>;\n")
         lines.append("\n")
-        lines.append(f"    using SpvsMap = frozen::unordered_map<frozen::string, const std::span<const u8>, {n}>;\n")
+        lines.append(
+            f"    using SpvsMap = frozen::unordered_map<"
+            f"frozen::string, const std::span<const u8>, {n}>;\n"
+        )
         lines.append("\n")
 
+        # ---------- 辅助函数：计算 shader 名称总大小 ----------
+        lines.append("    constexpr auto calcu_total_size(const embed::SpvsMap &spvs) -> size_t {\n")
+        lines.append("        size_t total_sz = 0;\n")
+        lines.append("        for (auto it = spvs.begin(); it != spvs.end(); ++it) {\n")
+        lines.append("            total_sz += it->second.size();\n")
+        lines.append("        }\n")
+        lines.append("        return total_sz;\n")
+        lines.append("    }\n")
+        lines.append("\n")
+
+        # ---------- 宏定义 ----------
         for d in defines:
             lines.append(f"    {d}\n")
         lines.append("\n")
 
+        # ---------- 数组 + span ----------
         for arr, spn in zip(arrays, spans):
             lines.append(f"{arr}\n")
             lines.append(f"{spn}\n")
             lines.append("\n")
 
+        # ---------- 映射表 ----------
         if n > 0:
-            map_init: str = ",\n        ".join([f'{{"{key}", {var}}}' for key, var in map_entries])
+            map_init: str = ",\n        ".join(
+                [f'{{"{key}", {var}}}' for key, var in map_entries]
+            )
             lines.append(f"    constexpr SpvsMap spvs_map{{\n        {map_init}\n    }};\n")
         else:
             lines.append("    constexpr SpvsMap spvs_map{};\n")
 
-        lines.append("\n}; // namespace embed\n")
+        lines.append("\n")
+        lines.append("    static constexpr size_t total_sz = calcu_total_size(spvs_map);\n")
+        lines.append("\n")
+
+        lines.append("}; // namespace embed\n")
         return lines
 
     def run(self) -> int:
@@ -321,10 +335,8 @@ def main() -> None:
 
     # ---------- 计算输出文件路径 ----------
     if args.output is not None:
-        # 用户直接指定了完整文件路径
         output_file: Path = args.output.resolve()
     else:
-        # 用户指定了目录 + 文件名
         output_dir: Path = args.output_dir.resolve()
         output_file = output_dir / args.output_name
 

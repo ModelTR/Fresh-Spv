@@ -68,7 +68,7 @@ auto details::CCtxGuard::create() -> util::res<CCtxGuard> {
 	return CCtxGuard{*cctx};
 }
 
-auto zstd::make_cdict_guard(const u8vec &dict, int compression_lvl)
+auto fszstd::make_cdict_guard(const u8vec &dict, int compression_lvl)
 	-> util::res<details::CDictGuard> {
 	return details::CDictGuard::create(dict, compression_lvl);
 }

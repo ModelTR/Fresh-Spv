@@ -2,3 +2,4 @@ build
 deps_cache
 smolvs
 shader
+embed.hpp

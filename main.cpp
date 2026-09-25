@@ -27,6 +27,8 @@
 
 /// @todo replace uint8_t with std::byte in C++23 through #embed as std::byte
 /// @todo add CLI functionality instead of hard-encode
+/// @todo add benchmark
+/// @todo add test
 
 auto main() -> int {
 	try {
@@ -63,6 +65,7 @@ auto main() -> int {
 		if (encoded_failed_count != 0) {
 			spdlog::error("Encoded to Smolv Failed {} times",
 						  encoded_failed_count);
+			return EXIT_FAILURE;
 		}
 
 		/// @note 16kb

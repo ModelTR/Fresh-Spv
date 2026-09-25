@@ -67,7 +67,7 @@ auto main() -> int {
 
 		/// @note 16kb
 		auto dict =
-			zstd::train_dict<u8, 16 * 1024>(smolvs_data, smolvs_sz)
+			fszstd::train_dict<u8, 16 * 1024>(smolvs_data, smolvs_sz)
 				.and_then([](const u8vec &d) -> util::res<u8vec> {
 					auto writen =
 						write_file("trained_dictionary.dict", "../smolvs", d);
@@ -84,7 +84,7 @@ auto main() -> int {
 		}
 
 		std::atomic<int> failures{0};
-		auto cdict_g = zstd::make_cdict_guard(*dict, 22);
+		auto cdict_g = fszstd::make_cdict_guard(*dict, 22);
 		if (!cdict_g) {
 			cdict_g.error() | print();
 			return EXIT_FAILURE;
@@ -98,7 +98,7 @@ auto main() -> int {
 			std::execution::par, std::begin(smolvs), std::end(smolvs),
 			[&](const auto &smolv) {
 				auto compressed_smolv =
-					zstd::dict_compress(smolv.second, cdict)
+					fszstd::dict_compress(smolv.second, cdict)
 						.and_then([&](const u8vec &cs) -> util::res<void> {
 							auto full_name = str{smolv.first} += ".zst";
 							auto res = write_file(full_name, "../smolvs", cs);

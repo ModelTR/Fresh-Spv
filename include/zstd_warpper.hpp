@@ -53,7 +53,7 @@ private:
 
 } // namespace details
 
-namespace zstd {
+namespace fszstd {
 
 auto make_cdict_guard(const u8vec &dict, int compression_lvl)
 	-> util::res<details::CDictGuard>;

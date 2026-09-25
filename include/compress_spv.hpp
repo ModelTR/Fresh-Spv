@@ -15,13 +15,13 @@
 #include "type_alias.hpp"
 
 template <class Src>
-auto write_file(str_view file_name, str_view output_path, const Src &src_data)
+auto write_file(str_view file_name, fs::path output_path, const Src &src_data)
 	-> util::res<void> {
 
 	auto fn_name = util::get_fn_name();
 
 	auto full_path = output_path.empty() ? fs::current_path() / file_name
-										 : fs::path(output_path) / file_name;
+										 : output_path / file_name;
 
 	std::ofstream data_out{full_path, std::ios::binary | std::ios::trunc};
 

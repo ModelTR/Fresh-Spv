@@ -12,14 +12,14 @@ project(SpvCompress LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF) 
-#set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -static")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 # 把 FetchContent 的目录设置在主工作文件夹
 set(FETCHCONTENT_BASE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/deps_cache)
 # 完全关闭更新
-set(FETCHCONTENT_FULLY_DISCONNECTED ON)
+#set(FETCHCONTENT_FULLY_DISCONNECTED ON)
 
 find_package(TBB REQUIRED)
 
@@ -87,6 +87,20 @@ set(SPDLOG_SYSTEM_INCLUDES ON)
 
 FetchContent_MakeAvailable(spdlog)
 
+# --- cxxopts ---------------------------------------------------------------
+FetchContent_Declare(
+  cxxopts
+  GIT_REPOSITORY https://gh-proxy.com/https://github.com/jarro2783/cxxopts
+  GIT_TAG v3.3.1
+  GIT_SHALLOW TRUE
+  UPDATE_DISCONNECTED TRUE
+  SYSTEM
+)
+
+set(CXXOPTS_BUILD_EXAMPLES OFF)
+set(CXXOPTS_BUILD_TESTS OFF)
+
+FetchContent_MakeAvailable(cxxopts)
 
 # --- smol-v ----------------------------------------------------------------
 
@@ -137,12 +151,13 @@ target_include_directories(SpvCompress PRIVATE
 )
 
 target_link_libraries(SpvCompress PRIVATE
-    libzstd
+    zstd
     smol-v-lib
     frozen
     expected
     TBB::tbb
     spdlog::spdlog
+    cxxopts::cxxopts
 )
 
 

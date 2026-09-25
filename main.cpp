@@ -18,6 +18,7 @@
 #include <spdlog/spdlog.h>
 #include <tl/expected.hpp>
 
+#include "cli.hpp"
 #include "compress_spv.hpp"
 #include "embed.hpp"
 #include "err.hpp"
@@ -25,14 +26,18 @@
 #include "smolv.h"
 #include "zstd_warpper.hpp"
 
+
 /// @todo replace uint8_t with std::byte in C++23 through #embed as std::byte
 /// @todo add CLI functionality instead of hard-encode
 /// @todo add benchmark
 /// @todo add test
 
-auto main() -> int {
+auto main(int argc, char **argv) -> int {
 	try {
 		util::Recorder t_record;
+
+		auto cli = cli::make(argc, argv);
+		auto const OUTPUT_DIR = cli.get_path().string();
 
 		spdlog::info("Current working directory: {}",
 					 fs::current_path().string());
@@ -71,9 +76,9 @@ auto main() -> int {
 		/// @note 16kb
 		auto dict =
 			fszstd::train_dict<u8, 16 * 1024>(smolvs_data, smolvs_sz)
-				.and_then([](const u8vec &d) -> util::res<u8vec> {
+				.and_then([&OUTPUT_DIR](const u8vec &d) -> util::res<u8vec> {
 					auto writen =
-						write_file("trained_dictionary.dict", "../smolvs", d);
+						write_file("trained_dictionary.dict", OUTPUT_DIR, d);
 					if (!writen) {
 						return util::err(writen.error() |
 										 add_err("Write Dictionary Failed"));
@@ -104,7 +109,7 @@ auto main() -> int {
 					fszstd::dict_compress(smolv.second, cdict)
 						.and_then([&](const u8vec &cs) -> util::res<void> {
 							auto full_name = str{smolv.first} += ".zst";
-							auto res = write_file(full_name, "../smolvs", cs);
+							auto res = write_file(full_name, OUTPUT_DIR, cs);
 							if (!res) {
 								return util::err(
 									res.error() |

@@ -16,6 +16,10 @@ from pathlib import Path
 from typing import List, Dict, Set, Tuple, Any
 from datetime import datetime
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+if hasattr(sys.stderr, "reconfigure"):
+    sys.stderr.reconfigure(encoding="utf-8", errors="replace")
 
 # ---------- 命名转换工具 ----------
 class NamingConverter:
@@ -260,18 +264,35 @@ def main() -> None:
     parser = argparse.ArgumentParser(
         description="自动生成 Shader 嵌入头文件 embed.hpp（支持多个目录）"
     )
+    # ---------- 输入：包含 .spv 的目录（一个或多个） ----------
     parser.add_argument(
         '--shader-dirs',
+        '--shader-dir',
         nargs='+',
         type=Path,
         default=[Path(__file__).parent],
+        dest='shader_dirs',
         help="包含 .spv 文件的目录列表，用空格分隔（默认: 脚本所在目录）"
     )
+    # ---------- 输出：指定 .hpp 所在目录 ----------
+    parser.add_argument(
+        '--output-dir',
+        type=Path,
+        default=Path(__file__).parent.parent,
+        help="输出 .hpp 文件的目录（默认: 脚本所在目录的父目录）"
+    )
+    # ---------- 输出：指定 .hpp 文件名 ----------
+    parser.add_argument(
+        '--output-name',
+        default="embed.hpp",
+        help="输出的头文件名（默认: embed.hpp）"
+    )
+    # ---------- 输出：直接指定完整路径（可选，优先级最高） ----------
     parser.add_argument(
         '--output',
         type=Path,
-        default=Path(__file__).parent.parent / "embed.hpp",
-        help="输出头文件路径（默认: ../embed.hpp）"
+        default=None,
+        help="直接指定输出 .hpp 的完整路径；若指定则覆盖 --output-dir 与 --output-name"
     )
     parser.add_argument(
         '--prefix',
@@ -297,7 +318,15 @@ def main() -> None:
     args: argparse.Namespace = parser.parse_args()
 
     shader_dirs: List[Path] = [d.resolve() for d in args.shader_dirs]
-    output_file: Path = args.output.resolve()
+
+    # ---------- 计算输出文件路径 ----------
+    if args.output is not None:
+        # 用户直接指定了完整文件路径
+        output_file: Path = args.output.resolve()
+    else:
+        # 用户指定了目录 + 文件名
+        output_dir: Path = args.output_dir.resolve()
+        output_file = output_dir / args.output_name
 
     config: Dict[str, Any] = {
         'shader_dirs': shader_dirs,
@@ -312,7 +341,7 @@ def main() -> None:
     count: int = generator.run()
 
     if not args.dry_run:
-        print(f"✅ 完成，共处理 {count} 个文件。")
+        print(f" 完成，共处理 {count} 个文件。输出: {output_file}")
 
 
 if __name__ == "__main__":

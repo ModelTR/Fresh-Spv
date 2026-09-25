@@ -1,19 +1,23 @@
 // ============================================================
 // 此文件由 embed_to_hpp.py 自动生成，请勿手动编辑。
-// 生成时间: 2026-08-23T21:09:51.800119
+// 生成时间: 2026-09-25T18:47:22.998977
 // 若要更新，请重新运行该脚本。
 // ============================================================
 
 #pragma once
 
+#include <cstdint>
 #include <span>
 #include "frozen/unordered_map.h"
 #include "frozen/string.h"
 
-#include "type_alias.hpp"
+using u8 = std::uint8_t;
 
 namespace embed {
-    
+
+    template <size_t Extent = std::dynamic_extent>
+    using cu8span = std::span<const u8, Extent>;
+
     using SpvsMap = frozen::unordered_map<frozen::string, const std::span<const u8>, 35>;
 
     #define BLOOM_VERT "../shader/Bloom.vert.spv"

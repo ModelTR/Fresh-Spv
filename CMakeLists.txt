@@ -113,6 +113,24 @@ add_executable(SpvCompress
   ${SRC_FILES}
   )
 
+set(GENERATED_FILE ${CMAKE_CURRENT_SOURCE_DIR}/include/embed.hpp)
+
+find_package(Python3 COMPONENTS Interpreter REQUIRED)
+
+add_custom_target(run_embed_to_hpp
+    COMMAND 
+        ${Python3_EXECUTABLE} 
+        ${CMAKE_CURRENT_SOURCE_DIR}/py/embed_to_hpp.py
+        --output ${GENERATED_FILE}
+        --shader-dirs ${CMAKE_CURRENT_SOURCE_DIR}/shader
+    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/py/embed_to_hpp.py
+    BYPRODUCTS ${GENERATED_FILE}
+    COMMENT "Generating ${GENERATED_FILE}"
+    VERBATIM
+  )
+
+add_dependencies(SpvCompress run_embed_to_hpp)
+
 target_include_directories(SpvCompress PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include
     ${CMAKE_CURRENT_SOURCE_DIR}/src

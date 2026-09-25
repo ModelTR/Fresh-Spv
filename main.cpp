@@ -26,6 +26,7 @@
 #include "zstd_warpper.hpp"
 
 /// @todo replace uint8_t with std::byte in C++23 through #embed as std::byte
+/// @todo add CLI functionality instead of hard-encode
 
 auto main() -> int {
 	try {

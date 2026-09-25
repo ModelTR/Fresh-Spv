@@ -4,6 +4,7 @@
 #include <cassert>
 #include <source_location>
 #include <spdlog/common.h>
+#include <spdlog/fmt/bundled/format.h>
 #include <utility>
 #include <vector>
 
@@ -28,53 +29,50 @@ public:
 
 	Err(Err &&other) = default;
 
+	auto add_message(const str &msg, spdlog::level::level_enum lvl) -> Err & {
+		logged_conts_.push_back(msg);
+		levels_.push_back(lvl);
+		return *this;
+	}
+
 	template <class... Args>
 	auto add_err(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		-> Err & {
-		logged_conts_.push_back(
-			std::move(fmt::format(fmt, std::forward<Args>(args)...)));
-		levels_.push_back(spdlog::level::err);
-		return *this;
+		return add_message(fmt::format(fmt, std::forward<Args>(args)...),
+						   spdlog::level::err);
 	}
 
 	template <class... Args>
 	auto add_info(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		-> Err & {
-		logged_conts_.push_back(
-			std::move(fmt::format(fmt, std::forward<Args>(args)...)));
-		levels_.push_back(spdlog::level::info);
-		return *this;
+		return add_message(fmt::format(fmt, std::forward<Args>(args)...),
+						   spdlog::level::info);
 	}
 
 	template <class... Args>
-	auto add_warning(spdlog::format_string_t<Args...> fmt, Args &&...args)
+	auto add_warn(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		-> Err & {
-		logged_conts_.push_back(
-			std::move(fmt::format(fmt, std::forward<Args>(args)...)));
-		levels_.push_back(spdlog::level::warn);
-		return *this;
+		return add_message(fmt::format(fmt, std::forward<Args>(args)...),
+						   spdlog::level::warn);
 	}
 
 	template <class... Args>
 	auto add_critical(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		-> Err & {
-		logged_conts_.push_back(
-			std::move(fmt::format(fmt, std::forward<Args>(args)...)));
-		levels_.push_back(spdlog::level::critical);
-		return *this;
+		return add_message(fmt::format(fmt, std::forward<Args>(args)...),
+						   spdlog::level::critical);
 	}
 
 	template <class... Args>
 	auto add_debug(spdlog::format_string_t<Args...> fmt, Args &&...args)
 		-> Err & {
-		logged_conts_.push_back(
-			std::move(fmt::format(fmt, std::forward<Args>(args)...)));
-		levels_.push_back(spdlog::level::debug);
-		return *this;
+		return add_message(fmt::format(fmt, std::forward<Args>(args)...),
+						   spdlog::level::debug);
 	}
 
 	/// @brief spdlog::level::off as a default represent print all level
-	auto print(spdlog::level::level_enum lvl_beprinted = spdlog::level::off) const
+	auto
+	print(spdlog::level::level_enum lvl_beprinted = spdlog::level::off) const
 		-> void;
 
 	template <class Fn>
@@ -90,40 +88,45 @@ public:
 
 template <class... Args>
 auto add_err(spdlog::format_string_t<Args...> fmt, Args &&...args) {
-	return [=](Err &e) -> Err & {
-		e.add_err(fmt, std::forward<Args>(args)...);
+	str msg = fmt::format(fmt, std::forward<Args>(args)...);
+	return [msg = std::move(msg)](Err &e) -> Err & {
+		e.add_message(msg, spdlog::level::err);
 		return e;
 	};
 }
 
 template <class... Args>
 auto add_info(spdlog::format_string_t<Args...> fmt, Args &&...args) {
-	return [=](Err &e) -> Err & {
-		e.add_info(fmt, std::forward<Args>(args)...);
+	str msg = fmt::format(fmt, std::forward<Args>(args)...);
+	return [msg = std::move(msg)](Err &e) -> Err & {
+		e.add_message(msg, spdlog::level::info);
 		return e;
 	};
 }
 
 template <class... Args>
 auto add_warning(spdlog::format_string_t<Args...> fmt, Args &&...args) {
-	return [=](Err &e) -> Err & {
-		e.add_warning(fmt, std::forward<Args>(args)...);
+	str msg = fmt::format(fmt, std::forward<Args>(args)...);
+	return [msg = std::move(msg)](Err &e) -> Err & {
+		e.add_message(msg, spdlog::level::warn);
 		return e;
 	};
 }
 
 template <class... Args>
 auto add_critical(spdlog::format_string_t<Args...> fmt, Args &&...args) {
-	return [=](Err &e) -> Err & {
-		e.add_critical(fmt, std::forward<Args>(args)...);
+	str msg = fmt::format(fmt, std::forward<Args>(args)...);
+	return [msg = std::move(msg)](Err &e) -> Err & {
+		e.add_message(msg, spdlog::level::critical);
 		return e;
 	};
 }
 
 template <class... Args>
 auto add_debug(spdlog::format_string_t<Args...> fmt, Args &&...args) {
-	return [=](Err &e) -> Err & {
-		e.add_debug(fmt, std::forward<Args>(args)...);
+	str msg = fmt::format(fmt, std::forward<Args>(args)...);
+	return [msg = std::move(msg)](Err &e) -> Err & {
+		e.add_message(msg, spdlog::level::debug);
 		return e;
 	};
 }

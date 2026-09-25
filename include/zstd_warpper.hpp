@@ -1,11 +1,11 @@
 #pragma once
 
+#include <cstddef>
+
 #include "zstd.h"
 
 #include "err.hpp"
 #include "type_alias.hpp"
-#include "util.hpp"
-#include <cstddef>
 
 namespace details {
 class CDictGuard {

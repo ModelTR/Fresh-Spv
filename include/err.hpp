@@ -180,6 +180,12 @@ auto make_critical(spdlog::format_string_t<Args...> fmt, Args &&...args)
 	return make_impl<spdlog::level::critical>(fmt, std::forward<Args>(args)...);
 }
 
+template <class... Args>
+auto make_warn(spdlog::format_string_t<Args...> fmt, Args &&...args)
+	-> err {
+	return make_impl<spdlog::level::warn>(fmt, std::forward<Args>(args)...);
+}
+
 template <class T = std::source_location>
 auto get_fn_name(fmt::format_string<T> fmt = "Fn[\033[34m{}\033[0m]",
 				 T &&loc = std::source_location::current()) -> str {

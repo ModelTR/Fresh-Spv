@@ -1,5 +1,6 @@
 #include "recorder.hpp"
 
+#include <spdlog/fmt/bundled/format.h>
 #include <spdlog/spdlog.h>
 
 util::Recorder::Recorder(const str &lb, const src_loc &loc)
@@ -18,10 +19,11 @@ util::Recorder::~Recorder() {
 
 auto util::Recorder::record(const src_loc &loc) -> void {
 	recordable_ = false;
-	spdlog::info("Fn: \"{}\" [{} to {}] takes {}ms\n",
-				 (label_.size() != 0 ? label_ : start_loc_.function_name()),
-				 start_loc_.line(), loc.line(),
-				 std::chrono::duration_cast<std::chrono::milliseconds>(
-					 (steady_clock::now() - start_time_))
-					 .count());
+	recorded_msg_ =
+		fmt::format("Fn: \"{}\" [{} to {}] takes {}ms\n",
+					(label_.size() != 0 ? label_ : start_loc_.function_name()),
+					start_loc_.line(), loc.line(),
+					std::chrono::duration_cast<std::chrono::milliseconds>(
+						(steady_clock::now() - start_time_))
+						.count());
 }

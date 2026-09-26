@@ -23,10 +23,11 @@ public:
 	~Recorder();
 
 	auto record(const src_loc &loc = src_loc::current()) -> void;
-	auto print() -> void { spdlog::info(recorded_msg_); }
-	auto rprint() -> void {
-		this->record();
-		this->print();
+	auto print(const src_loc &loc = src_loc::current()) -> void {
+		if (recorded_msg_.empty()) {
+			this->record(loc);
+		}
+		spdlog::info(recorded_msg_);
 	}
 };
 

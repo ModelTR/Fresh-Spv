@@ -140,7 +140,7 @@ auto main(int argc, char **argv) -> int {
 		}
 
 		cli_recorder.print();
-		core_recorder.rprint();
+		core_recorder.print();
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {

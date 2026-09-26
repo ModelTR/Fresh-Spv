@@ -102,6 +102,19 @@ set(CXXOPTS_BUILD_TESTS OFF)
 
 FetchContent_MakeAvailable(cxxopts)
 
+# --- scnlib ----------------------------------------------------------------
+
+FetchContent_Declare(
+  scnlib
+  GIT_REPOSITORY https://gh-proxy.com/https://github.com/eliaskosunen/scnlib
+  GIT_TAG v4.0.1
+  GIT_SHALLOW TRUE
+  UPDATE_DISCONNECTED TRUE
+  SYSTEM
+)
+
+FetchContent_MakeAvailable(scnlib)
+
 # --- smol-v ----------------------------------------------------------------
 
 FetchContent_Declare(
@@ -158,6 +171,7 @@ target_link_libraries(SpvCompress PRIVATE
     TBB::tbb
     spdlog::spdlog
     cxxopts::cxxopts
+    scn::scn
 )
 
 

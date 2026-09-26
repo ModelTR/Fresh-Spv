@@ -32,12 +32,23 @@
 
 auto main(int argc, char **argv) -> int {
 	try {
-		util::Recorder t_record;
+		util::Recorder cli_recorder{"Proccess CLI"};
+
 		spdlog::info("Current working directory: {}",
 					 fs::current_path().string());
 
-		auto cli = cli::make(argc, argv);
-		auto const OUTPUT_DIR = cli.get_path();
+		auto [cli, output_path] = cli::make(argc, argv);
+		auto waited_input = cli::wait_input();
+		if (!waited_input) {
+			waited_input.error() | print();
+			return EXIT_FAILURE;
+		}
+		if (output_path.empty()) {
+			output_path = *waited_input;
+		}
+
+		cli_recorder.record();
+		util::Recorder core_recorder{"Proccess Core Logic"};
 
 		u8vec training_data;
 		training_data.reserve(embed::total_sz);
@@ -58,7 +69,7 @@ auto main(int argc, char **argv) -> int {
 				smolvs.emplace_back(str{spv.first.data()}, smolv);
 				smolvs_sz.push_back(smolv.size());
 				training_data.insert(training_data.end(), smolv.begin(),
-								   smolv.end());
+									 smolv.end());
 			} else {
 				encoded_failed_count++;
 			}
@@ -73,9 +84,9 @@ auto main(int argc, char **argv) -> int {
 		/// @note 16kb
 		auto dict =
 			fszstd::train_dict<u8, 16 * 1024>(training_data, smolvs_sz)
-				.and_then([&OUTPUT_DIR](const u8vec &d) -> util::res<u8vec> {
+				.and_then([&output_path](const u8vec &d) -> util::res<u8vec> {
 					auto writen =
-						write_file("trained_dictionary.dict", OUTPUT_DIR, d);
+						write_file("trained_dictionary.dict", output_path, d);
 					if (!writen) {
 						return util::err(writen.error() |
 										 add_err("Write Dictionary Failed"));
@@ -106,7 +117,7 @@ auto main(int argc, char **argv) -> int {
 					fszstd::dict_compress(smolv.second, cdict)
 						.and_then([&](const u8vec &cs) -> util::res<void> {
 							auto full_name = str{smolv.first} += ".zst";
-							auto res = write_file(full_name, OUTPUT_DIR, cs);
+							auto res = write_file(full_name, output_path, cs);
 							if (!res) {
 								return util::err(
 									res.error() |
@@ -128,7 +139,8 @@ auto main(int argc, char **argv) -> int {
 			return EXIT_FAILURE;
 		}
 
-		t_record.record();
+		cli_recorder.print();
+		core_recorder.rprint();
 
 		return EXIT_SUCCESS;
 	} catch (const std::exception &e) {
